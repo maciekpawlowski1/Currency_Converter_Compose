@@ -10,14 +10,16 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.pawlowski.currencyconvertercompose.ui.MainScreen
 import com.pawlowski.currencyconvertercompose.ui.theme.CurrencyConverterComposeTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             CurrencyConverterComposeTheme {
-                // A surface container using the 'background' color from the theme
                 ConverterApp()
             }
         }
@@ -26,6 +28,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ConverterApp() {
-
+    MainScreen()
 }
 
