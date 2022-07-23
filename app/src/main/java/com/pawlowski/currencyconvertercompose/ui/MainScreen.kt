@@ -12,6 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -22,9 +23,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pawlowski.currencyconvertercompose.CurrencyRate
 import com.pawlowski.currencyconvertercompose.R
 import com.pawlowski.currencyconvertercompose.ui.theme.CurrencyConverterComposeTheme
+
+val defaultRatesForPreview =listOf(
+    CurrencyRate( "PLN", "EUR", 5.1, "21.07.2021"),
+    CurrencyRate( "PLN", "GBP", 2.15, "21.07.2021"),
+    CurrencyRate( "PLN", "USD", 3.47, "21.07.2021"),
+    CurrencyRate( "PLN", "RUB", 193.4, "21.07.2021"),
+    CurrencyRate( "PLN", "CHF", 3.47, "21.07.2021"),
+    CurrencyRate( "PLN", "NOK", 3.49, "21.07.2021"),
+    CurrencyRate( "PLN", "SEK", 3.16, "21.07.2021"))
 
 val flagsId = mapOf(Pair("PLN", R.drawable.pln_flag),
     Pair("EUR", R.drawable.eu),
@@ -53,27 +65,67 @@ val flagsId = mapOf(Pair("PLN", R.drawable.pln_flag),
 
 @Composable
 fun MainScreen() {
+    val viewModel: MainViewModel = viewModel()
+    val isFromSelected = viewModel.isFromSelected.asFlow().collectAsState(initial = true).value
+
+    //Rates from EURO to other currencies
+    val rates = viewModel.rates.collectAsState(initial = listOf())
+    val chosenCurrency = viewModel.chosenCurrency.asFlow().collectAsState(initial = "EUR").value //TODO: Add choosing currency
+
+    val mappedRates = generateRatesForChosenCurrency(rates.value, chosenCurrency, isFromSelected)
     Surface(color = MaterialTheme.colors.background, modifier = Modifier.fillMaxSize()) {
         Column(horizontalAlignment = CenterHorizontally) {
-            CurrencyChoosePanel(10.dp)
-            {
+            CurrencyChoosePanel(10.dp,
+                isFromSelected,
+                chosenCurrency,
+                {
+                    viewModel.changeFromTo(it)
+                },
+                {
 
-            }
-            OtherCurrenciesPrice(listOf(
-                CurrencyRate(1, "PLN", "EUR", 5.1, "21.07.2021"),
-                CurrencyRate(1, "PLN", "GBP", 2.15, "21.07.2021"),
-                CurrencyRate(1, "PLN", "USD", 3.47, "21.07.2021"),
-                CurrencyRate(1, "PLN", "RUB", 193.4, "21.07.2021"),
-                CurrencyRate(1, "PLN", "CHF", 3.47, "21.07.2021"),
-                CurrencyRate(1, "PLN", "NOK", 3.49, "21.07.2021"),
-                CurrencyRate(1, "PLN", "SEK", 3.16, "21.07.2021"),
-            ), 30.dp)
+                }
+            )
+            OtherCurrenciesPrice(mappedRates, 30.dp, isFromSelected)
         }
     }
 }
 
+
+fun generateRatesForChosenCurrency(rates: List<CurrencyRate>, chosenCurrency: String, isFromSelected: Boolean): List<CurrencyRate>
+{
+    return if(rates.isEmpty())
+        listOf()
+    else if(chosenCurrency == "EUR")
+    {
+        if(isFromSelected)
+            rates
+        else
+            rates.map { CurrencyRate(it.to, it.from, 1/it.exchangeRate, it.timestamp) }
+    }
+    else
+    {
+        val ratesValue = rates
+        val chosenRate = ratesValue.first { it.to == chosenCurrency }
+        if(isFromSelected)
+        {
+            ratesValue.map {
+                it.copy(from = chosenCurrency, exchangeRate = it.exchangeRate/chosenRate.exchangeRate)
+            }
+        }
+        else
+        {
+            ratesValue.map {
+                it.copy(from=it.to, to=chosenCurrency,
+                    exchangeRate = chosenRate.exchangeRate/it.exchangeRate
+                )
+            }
+        }
+    }
+}
+
+
 @Composable
-fun CurrencyChoosePanel(paddingTop: Dp, onChooseCurrencyClick: () -> Unit)
+fun CurrencyChoosePanel(paddingTop: Dp, isFromSelected: Boolean, chosenCurrency: String, onFromToChangeClick: (isFrom: Boolean) -> Unit, onChooseCurrencyClick: () -> Unit)
 {
     Card(shape = CutCornerShape(30.dp), modifier = Modifier
         .fillMaxWidth(0.9f)
@@ -82,7 +134,10 @@ fun CurrencyChoosePanel(paddingTop: Dp, onChooseCurrencyClick: () -> Unit)
         elevation = 5.dp
     ) {
         Column(modifier = Modifier.padding(15.dp), horizontalAlignment = CenterHorizontally) {
-            Text(text = "From:", style = MaterialTheme.typography.h5, fontWeight = FontWeight.W500)
+            FromOrToSwap(isFromSelected)
+            {
+                onFromToChangeClick.invoke(it)
+            }
             Card(elevation = 10.dp, modifier = Modifier
                 .width(200.dp)
                 .requiredHeight(110.dp)
@@ -90,8 +145,8 @@ fun CurrencyChoosePanel(paddingTop: Dp, onChooseCurrencyClick: () -> Unit)
                 .clickable { onChooseCurrencyClick.invoke() }
             ) {
                 Row(verticalAlignment = CenterVertically, horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.padding(15.dp)) {
-                    CountryFlag(id = flagsId["PLN"]?:R.drawable.flag_icon)
-                    Text(text = "PLN", style = MaterialTheme.typography.h6, fontWeight = FontWeight.W400)
+                    CountryFlag(id = flagsId[chosenCurrency]?:R.drawable.flag_icon)
+                    Text(text = chosenCurrency, style = MaterialTheme.typography.h6, fontWeight = FontWeight.W400)
                     Icon(imageVector = Icons.Default.ArrowDropDown, modifier = Modifier.size(30.dp), contentDescription = "Choose")
 
                 }
@@ -104,6 +159,24 @@ fun CurrencyChoosePanel(paddingTop: Dp, onChooseCurrencyClick: () -> Unit)
 }
 
 @Composable
+fun FromOrToSwap(isFromSelected: Boolean, onFromToChangeClick: (isFrom: Boolean) -> Unit)
+{
+
+    Card(modifier = Modifier.height(50.dp), elevation = 5.dp) {
+        Row()
+        {
+            Surface(color = if(isFromSelected) Color.LightGray else Color.White, modifier = Modifier.clickable { onFromToChangeClick.invoke(true) }) {
+                Text(text = "From:", modifier = Modifier.padding(start = 15.dp, end= 5.dp, bottom = 10.dp, top = 10.dp), style = MaterialTheme.typography.h5, fontWeight = if(isFromSelected) FontWeight.W700 else FontWeight.W300)
+            }
+            VerticalDivider()
+            Surface(color = if(!isFromSelected) Color.LightGray else Color.White, modifier = Modifier.clickable { onFromToChangeClick.invoke(false) }) {
+                Text(text = "To:", modifier = Modifier.padding(start = 15.dp, end= 25.dp, bottom = 10.dp, top = 10.dp), style = MaterialTheme.typography.h5, fontWeight = if(!isFromSelected) FontWeight.W700 else FontWeight.W300)
+            }
+        }
+    }
+}
+
+@Composable
 fun CountryFlag(id: Int = R.drawable.flag_icon)
 {
     Card(shape = CircleShape, modifier = Modifier.size(50.dp)) {
@@ -112,7 +185,7 @@ fun CountryFlag(id: Int = R.drawable.flag_icon)
 }
 
 @Composable
-fun OtherCurrenciesPrice(rates: List<CurrencyRate>, topPadding: Dp)
+fun OtherCurrenciesPrice(rates: List<CurrencyRate>, topPadding: Dp, isFromSelected: Boolean)
 {
     Card(shape = CutCornerShape(topEnd = 20.dp), elevation = 5.dp, modifier = Modifier
         .wrapContentHeight()
@@ -122,7 +195,7 @@ fun OtherCurrenciesPrice(rates: List<CurrencyRate>, topPadding: Dp)
         {
             items(rates)
             {
-                OneCurrencyCard(it.to, it.exchangeRate)
+                OneCurrencyCard(if(isFromSelected) it.to else it.from, it.exchangeRate)
             }
         }
     }
@@ -180,6 +253,12 @@ private const val DividerAlpha = 0.12f
 @Composable
 fun MainScreenPreview() {
     CurrencyConverterComposeTheme {
-        MainScreen()
+        Surface(color = MaterialTheme.colors.background, modifier = Modifier.fillMaxSize()) {
+            Column(horizontalAlignment = CenterHorizontally) {
+                CurrencyChoosePanel(10.dp, true, "PLN", {}, {})
+
+                OtherCurrenciesPrice(defaultRatesForPreview, 30.dp, true)
+            }
+        }
     }
 }

@@ -1,10 +1,11 @@
 package com.pawlowski.currencyconvertercompose.data.entities
 
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 @Entity
 data class CurrencyRateEntity(
-    val id: Long,
+    @PrimaryKey(autoGenerate = true) val id: Long,
     val from: String,
     val to: String,
     val exchangeRate: Double,

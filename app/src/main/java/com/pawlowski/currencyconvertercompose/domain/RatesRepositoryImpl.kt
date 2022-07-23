@@ -2,12 +2,18 @@ package com.pawlowski.currencyconvertercompose.domain
 
 import com.pawlowski.currencyconvertercompose.data.RatesDao
 import com.pawlowski.currencyconvertercompose.data.entities.CurrencyRateEntity
+import com.pawlowski.currencyconvertercompose.data.service.RatesService
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RatesRepositoryImpl @Inject constructor(private val ratesDao: RatesDao): RatesRepository {
+class RatesRepositoryImpl @Inject constructor(
+    private val ratesDao: RatesDao,
+    private val ratesService: RatesService
+    ): RatesRepository {
 
 
     override fun getRates(): Flow<List<CurrencyRateEntity>> {
@@ -23,6 +29,16 @@ class RatesRepositoryImpl @Inject constructor(private val ratesDao: RatesDao): R
     }
 
     override suspend fun updateRates() {
-        TODO("Not yet implemented")
+        val response = ratesService.getRates()
+        if(response.isSuccessful)
+        {
+            response.body()?.let {
+                withContext(NonCancellable)
+                {
+                    deleteRates()
+                    insertRates(it.map { CurrencyRateEntity(0, it.from, it.to, it.exchangeRate, it.timestamp) })
+                }
+            }
+        }
     }
 }
