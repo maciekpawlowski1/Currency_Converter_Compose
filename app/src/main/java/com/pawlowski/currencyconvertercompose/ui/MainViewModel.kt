@@ -20,6 +20,12 @@ class MainViewModel @Inject constructor(
     private val _chosenCurrency = MutableLiveData("EUR")
     val chosenCurrency: LiveData<String> get() = _chosenCurrency
 
+    private val _isDialogVisible = MutableLiveData(false)
+    val isDialogVisible: LiveData<Boolean> = _isDialogVisible
+
+    private val _dialogSearchByInput = MutableLiveData("")
+    val dialogSearchByInput: LiveData<String> get() = _dialogSearchByInput
+
     fun updateRates()
     {
         viewModelScope.launch {
@@ -35,6 +41,16 @@ class MainViewModel @Inject constructor(
     fun changeChosenCurrency(currency: String)
     {
         _chosenCurrency.value = currency
+    }
+
+    fun changeVisibilityOfDialog(isVisible: Boolean)
+    {
+        _isDialogVisible.value = isVisible
+    }
+
+    fun changeSearchByInputValue(searchByValue: String)
+    {
+        _dialogSearchByInput.value = searchByValue
     }
 
     init {

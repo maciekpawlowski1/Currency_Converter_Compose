@@ -1,51 +1,133 @@
 package com.pawlowski.currencyconvertercompose.ui
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.pawlowski.currencyconvertercompose.R
 
 @Composable
-fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit, onDismissDialog: () -> Unit)
+fun CurrenciesDialog(countries: List<String>, dialogSearchByInput: String, onDialogSearchInputChange: (String) -> Unit, onCurrencyChoose: (String) -> Unit, onDismissDialog: () -> Unit)
 {
     Dialog(onDismissRequest = { onDismissDialog.invoke() }) {
+        Column(modifier = Modifier.fillMaxHeight(0.9f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceAround) {
+            Card(modifier = Modifier.wrapContentSize(), elevation = 5.dp) {
+                Column {
 
-        androidx.compose.material.Surface(modifier = Modifier.wrapContentSize(), color = Color.LightGray) {
-            LazyColumn()
-            {
-                items(countries)
-                {
-                    CountryChooseItem(currencyName = it)
+                    SearchBar(dialogSearchByInput)
+                    {
+                        onDialogSearchInputChange.invoke(it)
+                    }
+                    LazyColumn()
+                    {
+                        items(countries.filter { it.contains(dialogSearchByInput, ignoreCase = true) })
+                        { item ->
+                            CountryChooseItem(currencyName = item)
+                            {
+                                onCurrencyChoose.invoke(it)
+                            }
+                        }
+                    }
                 }
-            }
+                }
+
         }
+
     }
 }
 
 @Composable
-fun CountryChooseItem(currencyName: String)
+fun SearchBar(searchByInput: String, onSearchByInputChange: (String) -> Unit)
 {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
-        CountryFlag(flagsId[currencyName]?: R.drawable.flag_icon)
-        Text(text = currencyName)
+
+    Box(
+        modifier = Modifier
+            .padding(10.dp)
+            .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+            .fillMaxWidth()
+    ) {
+        BasicTextField(
+            value = searchByInput,
+            onValueChange = {
+                onSearchByInputChange.invoke(it)
+            },
+            modifier = Modifier
+                .background(Color.White, CircleShape)
+                .height(38.dp)
+                .fillMaxWidth(),
+            singleLine = true,
+            maxLines = 1,
+            decorationBox = { innerTextField ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "image",
+                        tint = Color.Blue
+                    )
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        if (searchByInput.isEmpty()) Text(
+                            "Search"
+                        )
+                        innerTextField()
+                    }
+                    if (searchByInput.isNotEmpty()) {
+                        IconButton(
+                            onClick = {
+                                onSearchByInputChange.invoke("")
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "image",
+                                tint = Color.Blue
+                            )
+                        }
+                    }
+                }
+            }
+        )
     }
+}
+
+@Composable
+fun CountryChooseItem(currencyName: String, onCurrencyChoose: (String) -> Unit)
+{
+    Column(modifier=Modifier.clickable { onCurrencyChoose.invoke(currencyName) }) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(10.dp)) {
+            CountryFlag(flagsId[currencyName]?: R.drawable.flag_icon)
+            Text(text = currencyName, modifier = Modifier.padding(horizontal = 10.dp), style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.W500)
+        }
+        Divider()
+    }
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DialogPreview()
 {
-    CurrenciesDialog(countries = defaultRatesForPreview.map { it.to }, onCurrencyChoose = {}, {})
+    CurrenciesDialog(countries = defaultRatesForPreview.map { it.to }, "", {}, onCurrencyChoose = {}, {})
 }
 

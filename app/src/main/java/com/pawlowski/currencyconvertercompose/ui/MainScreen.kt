@@ -82,10 +82,24 @@ fun MainScreen() {
                     viewModel.changeFromTo(it)
                 },
                 {
-
+                    viewModel.changeVisibilityOfDialog(true)
                 }
             )
             OtherCurrenciesPrice(mappedRates, 30.dp, isFromSelected)
+        }
+    }
+
+    if(viewModel.isDialogVisible.asFlow().collectAsState(initial = false).value)
+    {
+        CurrenciesDialog(countries = rates.value.map { it.to },
+            dialogSearchByInput = viewModel.dialogSearchByInput.asFlow().collectAsState(initial = "").value,
+            onDialogSearchInputChange = { viewModel.changeSearchByInputValue(it) },
+            onCurrencyChoose = {
+            viewModel.changeChosenCurrency(it)
+            viewModel.changeVisibilityOfDialog(false)
+            viewModel.changeSearchByInputValue("")
+        }) {
+            viewModel.changeVisibilityOfDialog(false)
         }
     }
 }
@@ -102,21 +116,20 @@ fun generateRatesForChosenCurrency(rates: List<CurrencyRate>, chosenCurrency: St
         else
             rates.map { CurrencyRate(it.to, it.from, 1/it.exchangeRate, it.timestamp) }
     }
-    else
-    {
-        val ratesValue = rates
-        val chosenRate = ratesValue.first { it.to == chosenCurrency }
-        if(isFromSelected)
-        {
-            ratesValue.map {
-                it.copy(from = chosenCurrency, exchangeRate = it.exchangeRate/chosenRate.exchangeRate)
+    else {
+        val chosenRate = rates.first { it.to == chosenCurrency }
+        if (isFromSelected) {
+            rates.map {
+                it.copy(
+                    from = chosenCurrency,
+                    exchangeRate = it.exchangeRate / chosenRate.exchangeRate
+                )
             }
-        }
-        else
-        {
-            ratesValue.map {
-                it.copy(from=it.to, to=chosenCurrency,
-                    exchangeRate = chosenRate.exchangeRate/it.exchangeRate
+        } else {
+            rates.map {
+                it.copy(
+                    from = it.to, to = chosenCurrency,
+                    exchangeRate = chosenRate.exchangeRate / it.exchangeRate
                 )
             }
         }
