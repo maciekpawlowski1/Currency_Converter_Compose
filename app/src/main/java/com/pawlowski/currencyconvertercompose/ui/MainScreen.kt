@@ -92,12 +92,9 @@ fun MainScreen() {
     if(viewModel.isDialogVisible.asFlow().collectAsState(initial = false).value)
     {
         CurrenciesDialog(countries = rates.value.map { it.to },
-            dialogSearchByInput = viewModel.dialogSearchByInput.asFlow().collectAsState(initial = "").value,
-            onDialogSearchInputChange = { viewModel.changeSearchByInputValue(it) },
             onCurrencyChoose = {
             viewModel.changeChosenCurrency(it)
             viewModel.changeVisibilityOfDialog(false)
-            viewModel.changeSearchByInputValue("")
         }) {
             viewModel.changeVisibilityOfDialog(false)
         }

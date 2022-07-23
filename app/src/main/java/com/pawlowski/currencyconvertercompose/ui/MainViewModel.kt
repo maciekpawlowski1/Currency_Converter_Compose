@@ -23,8 +23,7 @@ class MainViewModel @Inject constructor(
     private val _isDialogVisible = MutableLiveData(false)
     val isDialogVisible: LiveData<Boolean> = _isDialogVisible
 
-    private val _dialogSearchByInput = MutableLiveData("")
-    val dialogSearchByInput: LiveData<String> get() = _dialogSearchByInput
+
 
     fun updateRates()
     {
@@ -48,10 +47,7 @@ class MainViewModel @Inject constructor(
         _isDialogVisible.value = isVisible
     }
 
-    fun changeSearchByInputValue(searchByValue: String)
-    {
-        _dialogSearchByInput.value = searchByValue
-    }
+
 
     init {
         //updateRates()

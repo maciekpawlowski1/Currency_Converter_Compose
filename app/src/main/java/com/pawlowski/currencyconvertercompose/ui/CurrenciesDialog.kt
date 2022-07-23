@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,19 +21,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pawlowski.currencyconvertercompose.R
 
 @Composable
-fun CurrenciesDialog(countries: List<String>, dialogSearchByInput: String, onDialogSearchInputChange: (String) -> Unit, onCurrencyChoose: (String) -> Unit, onDismissDialog: () -> Unit)
+fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit, onDismissDialog: () -> Unit)
 {
-    Dialog(onDismissRequest = { onDismissDialog.invoke() }) {
+    val dialogViewModel: CurrenciesDialogViewModel = viewModel()
+    val dialogSearchByInput = dialogViewModel.dialogSearchByInput.asFlow().collectAsState(initial = "").value
+
+    Dialog(onDismissRequest = {
+        dialogViewModel.changeSearchByInputValue("")
+        onDismissDialog.invoke()
+    }) {
         Column(modifier = Modifier.fillMaxHeight(0.9f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceAround) {
             Card(modifier = Modifier.wrapContentSize(), elevation = 5.dp) {
                 Column {
 
                     SearchBar(dialogSearchByInput)
                     {
-                        onDialogSearchInputChange.invoke(it)
+                        dialogViewModel.changeSearchByInputValue(it)
                     }
                     LazyColumn()
                     {
@@ -40,6 +49,7 @@ fun CurrenciesDialog(countries: List<String>, dialogSearchByInput: String, onDia
                         { item ->
                             CountryChooseItem(currencyName = item)
                             {
+                                dialogViewModel.changeSearchByInputValue("")
                                 onCurrencyChoose.invoke(it)
                             }
                         }
@@ -128,6 +138,6 @@ fun CountryChooseItem(currencyName: String, onCurrencyChoose: (String) -> Unit)
 @Composable
 fun DialogPreview()
 {
-    CurrenciesDialog(countries = defaultRatesForPreview.map { it.to }, "", {}, onCurrencyChoose = {}, {})
+    CurrenciesDialog(countries = defaultRatesForPreview.map { it.to }, onCurrencyChoose = {}, {})
 }
 
