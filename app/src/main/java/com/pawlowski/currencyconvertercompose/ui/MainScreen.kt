@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -72,7 +73,9 @@ fun MainScreen() {
     val rates = viewModel.rates.collectAsState(initial = listOf())
     val chosenCurrency = viewModel.chosenCurrency.asFlow().collectAsState(initial = "EUR").value //TODO: Add choosing currency
 
-    val mappedRates = generateRatesForChosenCurrency(rates.value, chosenCurrency, isFromSelected)
+    val mappedRates = remember(rates.value, chosenCurrency, isFromSelected) {
+        generateRatesForChosenCurrency(rates.value, chosenCurrency, isFromSelected)
+    }
     Surface(color = MaterialTheme.colors.background, modifier = Modifier.fillMaxSize()) {
         Column(horizontalAlignment = CenterHorizontally) {
             CurrencyChoosePanel(10.dp,

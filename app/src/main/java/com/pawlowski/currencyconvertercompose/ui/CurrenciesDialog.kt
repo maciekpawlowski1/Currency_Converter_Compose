@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,9 +44,13 @@ fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit
                     {
                         dialogViewModel.changeSearchByInputValue(it)
                     }
+                    val filteredCountries = remember(countries, dialogSearchByInput)
+                    {
+                        countries.filter { it.contains(dialogSearchByInput, ignoreCase = true) }
+                    }
                     LazyColumn()
                     {
-                        items(countries.filter { it.contains(dialogSearchByInput, ignoreCase = true) })
+                        items(filteredCountries)
                         { item ->
                             CountryChooseItem(currencyName = item)
                             {

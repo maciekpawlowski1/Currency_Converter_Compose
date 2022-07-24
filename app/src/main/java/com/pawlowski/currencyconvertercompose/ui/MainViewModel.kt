@@ -51,5 +51,6 @@ class MainViewModel @Inject constructor(
 
     init {
         //updateRates()
+        
     }
 }
