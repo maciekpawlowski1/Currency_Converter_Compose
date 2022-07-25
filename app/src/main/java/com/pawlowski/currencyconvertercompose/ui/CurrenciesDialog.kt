@@ -13,8 +13,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,18 +23,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.asFlow
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pawlowski.currencyconvertercompose.R
+
 
 @Composable
 fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit, onDismissDialog: () -> Unit)
 {
-    val dialogViewModel: CurrenciesDialogViewModel = viewModel()
-    val dialogSearchByInput = dialogViewModel.dialogSearchByInput.asFlow().collectAsState(initial = "").value
+    val searchByInputState = rememberSaveable {
+        mutableStateOf("")
+    }
+
+    val dialogSearchByInput = searchByInputState.value
 
     Dialog(onDismissRequest = {
-        dialogViewModel.changeSearchByInputValue("")
+        searchByInputState.value = ""
         onDismissDialog.invoke()
     }) {
         Column(modifier = Modifier.fillMaxHeight(0.9f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceAround) {
@@ -42,7 +45,7 @@ fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit
 
                     SearchBar(dialogSearchByInput)
                     {
-                        dialogViewModel.changeSearchByInputValue(it)
+                        searchByInputState.value = it
                     }
                     val filteredCountries = remember(countries, dialogSearchByInput)
                     {
@@ -54,7 +57,7 @@ fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit
                         { item ->
                             CountryChooseItem(currencyName = item)
                             {
-                                dialogViewModel.changeSearchByInputValue("")
+                                searchByInputState.value = ""
                                 onCurrencyChoose.invoke(it)
                             }
                         }

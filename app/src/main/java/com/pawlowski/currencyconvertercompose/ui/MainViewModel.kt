@@ -28,7 +28,14 @@ class MainViewModel @Inject constructor(
     fun updateRates()
     {
         viewModelScope.launch {
-            updateRatesUseCase.execute()
+            try {
+                updateRatesUseCase.execute()
+            }
+            catch (e: Exception)
+            {
+
+            }
+
         }
     }
 
@@ -50,7 +57,7 @@ class MainViewModel @Inject constructor(
 
 
     init {
-        //updateRates()
-        
+        updateRates()
+
     }
 }
