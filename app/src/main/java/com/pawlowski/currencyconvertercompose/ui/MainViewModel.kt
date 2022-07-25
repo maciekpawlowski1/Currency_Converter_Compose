@@ -1,5 +1,8 @@
 package com.pawlowski.currencyconvertercompose.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.*
 import com.pawlowski.currencyconvertercompose.domain.use_cases.GetAllRatesUseCase
 import com.pawlowski.currencyconvertercompose.domain.use_cases.UpdateRatesUseCase
@@ -14,16 +17,8 @@ class MainViewModel @Inject constructor(
 ): ViewModel() {
     val rates = getAllRatesUseCase.execute()
 
-    private val _isFromSelected = MutableLiveData(true)
-    val isFromSelected: LiveData<Boolean> get() = _isFromSelected
-
-    private val _chosenCurrency = MutableLiveData("EUR")
-    val chosenCurrency: LiveData<String> get() = _chosenCurrency
-
-    private val _isDialogVisible = MutableLiveData(false)
-    val isDialogVisible: LiveData<Boolean> = _isDialogVisible
-
-
+    var uiState by mutableStateOf(MainScreenUiState(true, "EUR", false))
+        private set
 
     fun updateRates()
     {
@@ -41,17 +36,17 @@ class MainViewModel @Inject constructor(
 
     fun changeFromTo(isFromSelected: Boolean)
     {
-        _isFromSelected.value = isFromSelected
+        uiState = uiState.copy(isFromSelected = isFromSelected)
     }
 
     fun changeChosenCurrency(currency: String)
     {
-        _chosenCurrency.value = currency
+        uiState = uiState.copy(chosenCurrency = currency)
     }
 
     fun changeVisibilityOfDialog(isVisible: Boolean)
     {
-        _isDialogVisible.value = isVisible
+        uiState = uiState.copy(isDialogVisible = isVisible)
     }
 
 

@@ -67,11 +67,11 @@ val flagsId = mapOf(Pair("PLN", R.drawable.pln_flag),
 @Composable
 fun MainScreen() {
     val viewModel: MainViewModel = viewModel()
-    val isFromSelected = viewModel.isFromSelected.asFlow().collectAsState(initial = true).value
+    val isFromSelected = viewModel.uiState.isFromSelected
 
     //Rates from EURO to other currencies
     val rates = viewModel.rates.collectAsState(initial = listOf())
-    val chosenCurrency = viewModel.chosenCurrency.asFlow().collectAsState(initial = "EUR").value //TODO: Add choosing currency
+    val chosenCurrency = viewModel.uiState.chosenCurrency
 
     val mappedRates = remember(rates.value, chosenCurrency, isFromSelected) {
         generateRatesForChosenCurrency(rates.value, chosenCurrency, isFromSelected)
@@ -92,7 +92,7 @@ fun MainScreen() {
         }
     }
 
-    if(viewModel.isDialogVisible.asFlow().collectAsState(initial = false).value)
+    if(viewModel.uiState.isDialogVisible)
     {
         CurrenciesDialog(countries = rates.value.map { it.to },
             onCurrencyChoose = {

@@ -29,6 +29,7 @@ import com.pawlowski.currencyconvertercompose.R
 @Composable
 fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit, onDismissDialog: () -> Unit)
 {
+
     val searchByInputState = rememberSaveable {
         mutableStateOf("")
     }
