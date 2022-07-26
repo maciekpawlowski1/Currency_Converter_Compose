@@ -40,7 +40,7 @@ fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit
         searchByInputState.value = ""
         onDismissDialog.invoke()
     }) {
-        Column(modifier = Modifier.fillMaxHeight(0.9f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceAround) {
+        Box(modifier = Modifier.fillMaxHeight(0.9f), contentAlignment = Alignment.Center) {
             Card(modifier = Modifier.wrapContentSize(), elevation = 5.dp) {
                 Column {
 
@@ -64,7 +64,7 @@ fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit
                         }
                     }
                 }
-                }
+            }
 
         }
 

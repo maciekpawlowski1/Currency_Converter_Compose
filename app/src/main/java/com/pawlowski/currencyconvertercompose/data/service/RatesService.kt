@@ -8,6 +8,7 @@ import retrofit2.http.Headers
 
 interface RatesService {
 
+    //Example ApiKey, should be hidden if moved to production
     @Headers("ApiKey: ajtwyepo17dsahjzusdjksdjk213909a32389sdjkaeeqamjwj")
     @GET("api/rates")
     suspend fun getRates(): Response<List<CurrencyRate>>
