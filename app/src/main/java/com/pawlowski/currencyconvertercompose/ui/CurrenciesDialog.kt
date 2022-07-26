@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,7 +41,7 @@ fun CurrenciesDialog(countries: List<String>, onCurrencyChoose: (String) -> Unit
         searchByInputState.value = ""
         onDismissDialog.invoke()
     }) {
-        Box(modifier = Modifier.fillMaxHeight(0.9f), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxHeight(0.9f).testTag("dialog_box"), contentAlignment = Alignment.Center) {
             Card(modifier = Modifier.wrapContentSize(), elevation = 5.dp) {
                 Column {
 
@@ -89,7 +90,8 @@ fun SearchBar(searchByInput: String, onSearchByInputChange: (String) -> Unit)
             modifier = Modifier
                 .background(Color.White, CircleShape)
                 .height(38.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .testTag("search_field"),
             singleLine = true,
             maxLines = 1,
             decorationBox = { innerTextField ->
@@ -116,6 +118,7 @@ fun SearchBar(searchByInput: String, onSearchByInputChange: (String) -> Unit)
                             onClick = {
                                 onSearchByInputChange.invoke("")
                             },
+                            modifier = Modifier.testTag("search_close_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
@@ -136,7 +139,7 @@ fun CountryChooseItem(currencyName: String, onCurrencyChoose: (String) -> Unit)
     Column(modifier=Modifier.clickable { onCurrencyChoose.invoke(currencyName) }) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(10.dp)) {
             CountryFlag(flagsId[currencyName]?: R.drawable.flag_icon)
-            Text(text = currencyName, modifier = Modifier.padding(horizontal = 10.dp), style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.W500)
+            Text(text = currencyName, modifier = Modifier.padding(horizontal = 10.dp).testTag("search_rate_tittle"), style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.W500)
         }
         Divider()
     }

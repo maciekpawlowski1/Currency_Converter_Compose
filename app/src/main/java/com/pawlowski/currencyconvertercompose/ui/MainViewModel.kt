@@ -52,7 +52,7 @@ class MainViewModel @Inject constructor(
 
 
     init {
-        updateRates() //TODO: check when rates were fetched last time and update only if needed
+        //updateRates() //TODO: check when rates were fetched last time and update only if needed
 
     }
 }

@@ -1,6 +1,5 @@
 package com.pawlowski.currencyconvertercompose.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,12 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -257,6 +255,7 @@ fun CurrencyChoosePanel(paddingTop: Dp, isFromSelected: Boolean, chosenCurrency:
                 .requiredHeight(110.dp)
                 .padding(top = 10.dp, bottom = 10.dp)
                 .clickable { onChooseCurrencyClick.invoke() }
+                .testTag("choose_currency_card")
             ) {
                 Row(verticalAlignment = CenterVertically, horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.padding(15.dp)) {
                     CountryFlag(id = flagsId[chosenCurrency]?:R.drawable.flag_icon)
@@ -328,7 +327,10 @@ fun OneCurrencyCard(currencyName: String, price: Double)
                     .requiredHeight(80.dp)
                     .fillMaxWidth(0.65f), verticalAlignment = CenterVertically, horizontalArrangement = Arrangement.Start) {
                 CountryFlag(id = flagsId[currencyName]?:R.drawable.flag_icon)
-                Text(text = currencyName, Modifier.padding(horizontal = 10.dp), style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.W500)
+                Text(text = currencyName,
+                    Modifier
+                        .padding(horizontal = 10.dp)
+                        .testTag("rate_tittle"), style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.W500)
 
             }
             Row(
