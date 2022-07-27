@@ -2,8 +2,11 @@ package com.pawlowski.currencyconvertercompose.di
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.pawlowski.currencyconvertercompose.R
+import com.pawlowski.currencyconvertercompose.RatesUpdateTimeManager
+import com.pawlowski.currencyconvertercompose.RatesUpdateTimeManagerImpl
 import com.pawlowski.currencyconvertercompose.data.RatesDao
 import com.pawlowski.currencyconvertercompose.data.RatesDatabase
 import com.pawlowski.currencyconvertercompose.data.service.RatesService
@@ -66,5 +69,19 @@ class AppModule {
     fun ratesService(retrofit: Retrofit): RatesService
     {
         return retrofit.create(RatesService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun sharedPreferences(context: Context): SharedPreferences
+    {
+        return context.getSharedPreferences("currencies_shared_preferences", Context.MODE_PRIVATE)
+    }
+
+    @Singleton
+    @Provides
+    fun ratesUpdateTimeManager(updateTimeManagerImpl: RatesUpdateTimeManagerImpl): RatesUpdateTimeManager
+    {
+        return updateTimeManagerImpl
     }
 }

@@ -13,7 +13,7 @@ interface RatesDao {
     @Insert
     suspend fun insertRates(rates: List<CurrencyRateEntity>)
 
-    @Query("SELECT * FROM CurrencyRateEntity")
+    @Query("SELECT * FROM CurrencyRateEntity ORDER BY `to`")
     fun getAllRates(): Flow<List<CurrencyRateEntity>>
 
     @Query("SELECT COUNT(*) FROM CurrencyRateEntity")

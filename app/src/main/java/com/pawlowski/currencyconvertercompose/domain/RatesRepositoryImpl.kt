@@ -1,5 +1,6 @@
 package com.pawlowski.currencyconvertercompose.domain
 
+import com.pawlowski.currencyconvertercompose.RatesUpdateTimeManager
 import com.pawlowski.currencyconvertercompose.data.RatesDao
 import com.pawlowski.currencyconvertercompose.data.entities.CurrencyRateEntity
 import com.pawlowski.currencyconvertercompose.data.service.RatesService
@@ -12,7 +13,8 @@ import javax.inject.Singleton
 @Singleton
 class RatesRepositoryImpl @Inject constructor(
     private val ratesDao: RatesDao,
-    private val ratesService: RatesService
+    private val ratesService: RatesService,
+    private val updateTimeManager: RatesUpdateTimeManager
     ): RatesRepository {
 
 
@@ -37,6 +39,7 @@ class RatesRepositoryImpl @Inject constructor(
                 {
                     deleteRates()
                     insertRates(it.map { CurrencyRateEntity(0, it.from, it.to, it.exchangeRate, it.timestamp) })
+                    updateTimeManager.saveUpdateTime()
                 }
             }
         }

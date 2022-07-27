@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.*
 import com.pawlowski.currencyconvertercompose.domain.use_cases.GetAllRatesUseCase
 import com.pawlowski.currencyconvertercompose.domain.use_cases.UpdateRatesUseCase
+import com.pawlowski.currencyconvertercompose.domain.use_cases.WasRatesRecentlyUpdatedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -13,7 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getAllRatesUseCase: GetAllRatesUseCase,
-    private val updateRatesUseCase: UpdateRatesUseCase
+    private val updateRatesUseCase: UpdateRatesUseCase,
+    private val wasRatesRecentlyUpdatedUseCase: WasRatesRecentlyUpdatedUseCase
 ): ViewModel() {
     val rates = getAllRatesUseCase.execute()
 
@@ -52,7 +54,9 @@ class MainViewModel @Inject constructor(
 
 
     init {
-        //updateRates() //TODO: check when rates were fetched last time and update only if needed
-
+        if(!wasRatesRecentlyUpdatedUseCase())
+        {
+            updateRates()
+        }
     }
 }

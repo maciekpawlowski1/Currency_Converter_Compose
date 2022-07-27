@@ -1,5 +1,6 @@
 package com.pawlowski.currencyconvertercompose.domain
 
+import com.pawlowski.currencyconvertercompose.RatesUpdateTimeManager
 import com.pawlowski.currencyconvertercompose.data.RatesDao
 import com.pawlowski.currencyconvertercompose.data.entities.CurrencyRateEntity
 import com.pawlowski.currencyconvertercompose.data.service.RatesService
@@ -40,10 +41,13 @@ class RatesRepositoryImplTest {
     @Mock
     lateinit var daoMock: RatesDao
 
+    @Mock
+    lateinit var updateTimeManager: RatesUpdateTimeManager
+
     @Before
     fun setUp()
     {
-        SUT = RatesRepositoryImpl(ratesService = serviceMock, ratesDao = daoMock)
+        SUT = RatesRepositoryImpl(ratesService = serviceMock, ratesDao = daoMock, updateTimeManager = updateTimeManager)
     }
 
     @Test
@@ -81,7 +85,8 @@ class RatesRepositoryImplTest {
             verify(serviceMock).getRates()
             verify(daoMock).deleteAllRates()
             verify(daoMock).insertRates(defaultRates)
-            verifyNoMoreInteractions(daoMock, serviceMock)
+            verify(updateTimeManager).saveUpdateTime()
+            verifyNoMoreInteractions(daoMock, serviceMock, updateTimeManager)
         }
     }
 
