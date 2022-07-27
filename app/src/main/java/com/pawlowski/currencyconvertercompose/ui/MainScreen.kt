@@ -11,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -27,9 +28,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.pawlowski.currencyconvertercompose.CurrencyRate
 import com.pawlowski.currencyconvertercompose.R
 import com.pawlowski.currencyconvertercompose.ui.theme.CurrencyConverterComposeTheme
+import kotlinx.coroutines.delay
 
 val defaultRatesForPreview =listOf(
     CurrencyRate( "PLN", "EUR", 5.1, "21.07.2021"),
@@ -175,32 +179,60 @@ fun MainScreen() {
     val mappedRates = remember(rates.value, chosenCurrency, isFromSelected) {
         generateRatesForChosenCurrency(rates.value, chosenCurrency, isFromSelected)
     }
-    Surface(color = MaterialTheme.colors.background, modifier = Modifier.fillMaxSize()) {
-        Column(horizontalAlignment = CenterHorizontally) {
-            CurrencyChoosePanel(10.dp,
-                isFromSelected,
-                chosenCurrency,
-                {
-                    viewModel.changeFromTo(it)
-                },
-                {
-                    viewModel.changeVisibilityOfDialog(true)
+
+    val refreshState = rememberSwipeRefreshState(isRefreshing = viewModel.uiState.isRefreshing)
+
+    Scaffold(modifier = Modifier.fillMaxSize(), content = {
+        SwipeRefresh(state = refreshState,
+            onRefresh = {
+                viewModel.changeRefreshingState(true)
+                viewModel.updateRatesIfNeeded()
+                        },
+            modifier = Modifier.fillMaxSize()) {
+            Surface(color = MaterialTheme.colors.background, modifier = Modifier.fillMaxSize()) {
+                Column(horizontalAlignment = CenterHorizontally) {
+                    CurrencyChoosePanel(10.dp,
+                        isFromSelected,
+                        chosenCurrency,
+                        {
+                            viewModel.changeFromTo(it)
+                        },
+                        {
+                            viewModel.changeVisibilityOfDialog(true)
+                        }
+                    )
+                    OtherCurrenciesPrice(mappedRates, 30.dp, isFromSelected)
                 }
-            )
-            OtherCurrenciesPrice(mappedRates, 30.dp, isFromSelected)
+            }
+
+            if(viewModel.uiState.isDialogVisible)
+            {
+                CurrenciesDialog(countries = rates.value.map { it.to },
+                    onCurrencyChoose = {
+                        viewModel.changeChosenCurrency(it)
+                        viewModel.changeVisibilityOfDialog(false)
+                    }) {
+                    viewModel.changeVisibilityOfDialog(false)
+                }
+            }
+        }
+    })
+
+    LaunchedEffect(viewModel.uiState.isRefreshing)
+    {
+        if(viewModel.uiState.isRefreshing)
+        {
+            delay(1000)
+            //If it's not updating (update was not needed)
+            if(!viewModel.isUpdating.value)
+                viewModel.changeRefreshingState(false)
         }
     }
 
-    if(viewModel.uiState.isDialogVisible)
-    {
-        CurrenciesDialog(countries = rates.value.map { it.to },
-            onCurrencyChoose = {
-            viewModel.changeChosenCurrency(it)
-            viewModel.changeVisibilityOfDialog(false)
-        }) {
-            viewModel.changeVisibilityOfDialog(false)
-        }
-    }
+
+
+
+
 }
 
 

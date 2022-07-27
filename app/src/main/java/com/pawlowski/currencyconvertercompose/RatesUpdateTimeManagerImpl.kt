@@ -9,13 +9,12 @@ import kotlin.math.abs
 @Singleton
 class RatesUpdateTimeManagerImpl @Inject constructor(private val sharedPreferences: SharedPreferences) :
     RatesUpdateTimeManager {
-    override fun wasRecentlyUpdated(): Boolean
-    {
+    override fun wasRecentlyUpdated(): Boolean {
         val lastUpdated = synchronized(this)
         {
             return@synchronized sharedPreferences.getLong(LAST_UPDATE_TIME_TAG, 0)
         }
-        return (abs(System.currentTimeMillis()-lastUpdated) > UPDATE_DELTA_MINUTES *1000)
+        return (abs(System.currentTimeMillis() - lastUpdated) < UPDATE_DELTA_MINUTES * 1000 * 60)
     }
 
     override fun saveUpdateTime()
@@ -28,7 +27,7 @@ class RatesUpdateTimeManagerImpl @Inject constructor(private val sharedPreferenc
 
     companion object
     {
-        const val UPDATE_DELTA_MINUTES = 60
+        const val UPDATE_DELTA_MINUTES = 30
         const val LAST_UPDATE_TIME_TAG = "last_update_time"
     }
 }

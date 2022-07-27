@@ -3,11 +3,14 @@ package com.pawlowski.currencyconvertercompose.ui
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.pawlowski.currencyconvertercompose.domain.use_cases.GetAllRatesUseCase
 import com.pawlowski.currencyconvertercompose.domain.use_cases.UpdateRatesUseCase
 import com.pawlowski.currencyconvertercompose.domain.use_cases.WasRatesRecentlyUpdatedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,11 +22,17 @@ class MainViewModel @Inject constructor(
 ): ViewModel() {
     val rates = getAllRatesUseCase.execute()
 
-    var uiState by mutableStateOf(MainScreenUiState(true, "EUR", false))
+    var uiState by mutableStateOf(MainScreenUiState(
+        isFromSelected = true, chosenCurrency = "EUR", isDialogVisible = false, isRefreshing = false))
         private set
 
-    fun updateRates()
+    private val _isUpdating = MutableStateFlow(false)
+    val isUpdating: StateFlow<Boolean> get() = _isUpdating
+
+    private fun updateRates()
     {
+        changeRefreshingState(true)
+        _isUpdating.value = true
         viewModelScope.launch {
             try {
                 updateRatesUseCase.execute()
@@ -32,7 +41,19 @@ class MainViewModel @Inject constructor(
             {
 
             }
+            finally {
+                _isUpdating.value = false
+                changeRefreshingState(false)
+            }
 
+        }
+    }
+
+    fun updateRatesIfNeeded()
+    {
+        if(!wasRatesRecentlyUpdatedUseCase())
+        {
+            updateRates()
         }
     }
 
@@ -51,12 +72,15 @@ class MainViewModel @Inject constructor(
         uiState = uiState.copy(isDialogVisible = isVisible)
     }
 
-
+    fun changeRefreshingState(isRefreshing: Boolean)
+    {
+        if(isRefreshing == uiState.isRefreshing)
+            return
+        else
+            uiState = uiState.copy(isRefreshing = isRefreshing)
+    }
 
     init {
-        if(!wasRatesRecentlyUpdatedUseCase())
-        {
-            updateRates()
-        }
+        updateRatesIfNeeded()
     }
 }
